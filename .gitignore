@@ -1,0 +1,18 @@
+# Rust
+/target/
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local app data and temporary files
+.leansticky/
+.tmp/
+tmp/
+dist/

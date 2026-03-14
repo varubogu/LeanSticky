@@ -1,0 +1,12 @@
+settings:
+  ja: 設定
+  en: Settings
+quit:
+  ja: 終了
+  en: Quit
+always_on_top:
+  ja: 常に手前表示
+  en: Always on top
+reload_from_disk:
+  ja: ディスクから再読み込み
+  en: Reload from disk
