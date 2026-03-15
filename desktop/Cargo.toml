@@ -1,0 +1,16 @@
+[package]
+name = "leansticky-desktop"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+eframe.workspace = true
+egui.workspace = true
+leansticky-core = { path = "../core" }
+single-instance.workspace = true
+time.workspace = true
+
+[target.'cfg(any(target_os = "macos", target_os = "windows"))'.dependencies]
+eframe = { workspace = true, features = ["accesskit"] }

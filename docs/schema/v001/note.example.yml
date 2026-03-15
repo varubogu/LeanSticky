@@ -6,12 +6,3 @@ content: |
   Review design draft.
 created_at: 2026-03-15T00:00:00Z
 updated_at: 2026-03-15T00:00:00Z
-always_on_top: false
-window:
-  position:
-    x: 120
-    y: 96
-  size:
-    width: 320
-    height: 280
-  maximized: false

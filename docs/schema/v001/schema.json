@@ -8,13 +8,17 @@
       "type": "string",
       "const": "v001"
     },
+    "path_string": {
+      "type": "string",
+      "minLength": 1
+    },
     "locale": {
       "type": "string",
       "enum": ["system", "ja", "en"]
     },
     "locale_message": {
       "type": "object",
-      "required": ["ja", "en"],
+      "required": ["en"],
       "properties": {
         "ja": {
           "type": "string"
@@ -65,6 +69,7 @@
     },
     "window_state": {
       "type": "object",
+      "required": ["position", "size", "maximized"],
       "properties": {
         "position": {
           "$ref": "#/$defs/window_position"
@@ -82,14 +87,6 @@
       "type": "object",
       "properties": {
         "max_snapshots_per_note": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "recent_keep_minutes": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "long_term_interval_minutes": {
           "type": "integer",
           "minimum": 1
         }
@@ -111,8 +108,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "type": "string",
-            "minLength": 1
+            "$ref": "#/$defs/path_string"
           }
         },
         "autosave_delay_ms": {
@@ -126,11 +122,54 @@
       },
       "additionalProperties": false
     },
+    "session_open_window": {
+      "type": "object",
+      "required": ["root", "note_id", "position", "size", "maximized"],
+      "properties": {
+        "root": {
+          "$ref": "#/$defs/path_string"
+        },
+        "note_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "position": {
+          "$ref": "#/$defs/window_position"
+        },
+        "size": {
+          "$ref": "#/$defs/window_size"
+        },
+        "maximized": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "session": {
+      "type": "object",
+      "required": ["schema_version", "management_window", "open_windows"],
+      "properties": {
+        "schema_version": {
+          "$ref": "#/$defs/schema_version"
+        },
+        "management_window": {
+          "$ref": "#/$defs/window_state"
+        },
+        "open_windows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/session_open_window"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "note": {
       "type": "object",
       "required": [
         "schema_version",
         "id",
+        "title",
         "content",
         "created_at",
         "updated_at"
@@ -156,12 +195,6 @@
         "updated_at": {
           "type": "string",
           "format": "date-time"
-        },
-        "always_on_top": {
-          "type": "boolean"
-        },
-        "window": {
-          "$ref": "#/$defs/window_state"
         }
       },
       "additionalProperties": false

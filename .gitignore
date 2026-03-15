@@ -16,3 +16,8 @@ Thumbs.db
 .tmp/
 tmp/
 dist/
+
+
+# Added by cargo
+
+/target

@@ -4,7 +4,7 @@ Lightweight cross-platform sticky notes for Windows, macOS, and Linux.
 
 ## Status
 
-Planning stage.
+Prototype implementation in progress.
 
 ## Goals
 
@@ -21,12 +21,16 @@ Planning stage.
 - English design: [docs/en/design.md](docs/en/design.md)
 - Schemas: [docs/schema/v001/](docs/schema/v001/)
 
-## Planned Structure
+## Workspace
 
 ```text
 .
 ├── AGENTS.md
+├── core/
+├── desktop/
 ├── docs/
+├── messages.yml
+├── tui/
 ├── README.md
 └── ...
 ```
@@ -34,5 +38,5 @@ Planning stage.
 ## Notes
 
 - Local config is stored outside synced note folders.
+- Local session restore state is stored separately from synced notes.
 - Public schemas are versioned under `docs/schema/` for GitHub Pages.
-

@@ -1,0 +1,19 @@
+schema_version: v001
+management_window:
+  position:
+    x: 48
+    y: 48
+  size:
+    width: 420
+    height: 560
+  maximized: false
+open_windows:
+  - root: /path/to/default-note-root
+    note_id: 01HQY8J9XG4B0D2N5M7S8T1V2W
+    position:
+      x: 520
+      y: 96
+    size:
+      width: 360
+      height: 300
+    maximized: false

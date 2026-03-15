@@ -1,10 +1,7 @@
 schema_version: v001
 locale: system
 note_roots:
-  - /path/to/work-notes
-  - /path/to/private-notes
+  - /path/to/default-note-root
 autosave_delay_ms: 1500
 history:
   max_snapshots_per_note: 200
-  recent_keep_minutes: 60
-  long_term_interval_minutes: 30

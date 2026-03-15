@@ -1,0 +1,9 @@
+[package]
+name = "leansticky-tui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+leansticky-core = { path = "../core" }

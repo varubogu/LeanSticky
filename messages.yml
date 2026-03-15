@@ -1,0 +1,60 @@
+app_title:
+  ja: LeanSticky
+  en: LeanSticky
+notes:
+  ja: ノート
+  en: Notes
+new_note:
+  ja: 新規ノート
+  en: New note
+open_note:
+  ja: 開く
+  en: Open
+opened:
+  ja: 表示中
+  en: Opened
+title_placeholder:
+  ja: タイトル
+  en: Title
+untitled_note:
+  ja: 無題
+  en: Untitled
+status_saved:
+  ja: 保存済み
+  en: Saved
+status_pending:
+  ja: 自動保存待ち
+  en: Autosave pending
+status_error:
+  ja: 保存エラー
+  en: Save failed
+open_windows:
+  ja: 表示中のウインドウ
+  en: Open windows
+note_root:
+  ja: 保存先
+  en: Note root
+updated_at:
+  ja: 更新時刻
+  en: Updated
+empty_notes:
+  ja: ノートがありません。
+  en: No notes yet.
+close_note:
+  ja: 閉じる
+  en: Close
+management_window:
+  ja: 管理ウインドウ
+  en: Management
+save_failed:
+  ja: ノート保存に失敗しました。
+  en: Failed to save note.
+session_save_failed:
+  ja: セッション保存に失敗しました。
+  en: Failed to save session.
+autosave_waiting:
+  ja: 入力停止後に自動保存します。
+  en: The note will autosave after you stop typing.
+restore_empty:
+  ja: 復元対象が見つからなかったため、既定のノートを開きました。
+  en: No restorable notes were found, so a default note was opened.

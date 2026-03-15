@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://varubogu.github.io/LeanSticky/schema/v001/session.schema.json",
+  "title": "LeanSticky Session Schema v001",
+  "$ref": "./schema.json#/$defs/session"
+}

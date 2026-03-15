@@ -8,5 +8,6 @@
 - Keep config local-only and support multiple note root folders.
 - Use `messages.yml` for `ja` and `en` UI strings.
 - Reload external file changes automatically.
+- Limit configurable `cargo` command job counts to 4, for example `-j 4`.
 - Prefer minimal dependencies and simple architecture.
 - Update `docs/en`, `docs/ja`, and `docs/schema` when formats change.

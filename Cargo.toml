@@ -1,0 +1,23 @@
+[workspace]
+members = ["core", "desktop", "tui"]
+default-members = ["desktop"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[workspace.dependencies]
+anyhow = "1.0"
+directories = "6.0"
+# Keep native GUI features explicit so Linux/WSL does not pull in
+# AccessKit/AT-SPI by default and trip SIGPIPE in some environments.
+eframe = { version = "0.31", default-features = false, features = ["default_fonts", "glow", "wayland", "x11"] }
+egui = "0.31"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+single-instance = "0.3"
+tempfile = "3.18"
+time = { version = "0.3", features = ["formatting", "macros", "parsing", "serde"] }
+ulid = { version = "1.2", features = ["serde"] }

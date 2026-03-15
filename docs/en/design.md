@@ -10,34 +10,31 @@
 ## 2. Product Scope
 ### Desktop GUI
 - Built with Rust + egui/eframe.
-- Frameless custom window UI instead of OS default chrome.
-- Supports always-on-top toggle, minimize, maximize/restore, and close.
-- Control buttons stay hidden by default and appear with a hover animation.
-- Window can be moved and resized freely.
+- Run as a single process with one management window and multiple note windows.
+- The first implementation keeps standard OS window chrome and prioritizes multi-note display, autosave, and restore on relaunch.
+- Frameless UI, tray support, and always-on-top behavior are later milestones.
 - Text is autosaved after 1.5 seconds of idle time.
 - Each autosave adds one history snapshot.
-- Tray/taskbar integration shows note list on click and menu on right click.
-- Right-click menu includes at least Settings and Quit.
 - All visible UI strings are loaded from localized message data.
 
 ### TUI
 - Runs in terminal environments such as tmux.
 - Shares note files, history behavior, and sync logic with the GUI app.
 - Uses the same localized message keys as the GUI app.
-- Focuses on quick note browsing and editing, not graphical window behavior.
+- The first implementation only creates the crate skeleton; the usable terminal UI is a later milestone.
 
 ## 3. Non-Functional Requirements
 - Lightweight first: keep dependencies small and startup work minimal.
 - Offline-first and file-based.
-- Use YAML for both local config and note data.
-- Store configuration locally only and keep it out of synced note folders.
+- Use YAML for local config, local session state, and note data.
+- Store config and session files locally only and keep them out of synced note folders.
 - Safe for cloud-synced folders such as Dropbox, iCloud Drive, OneDrive, or Syncthing.
-- Detect external file changes and reload notes automatically.
+- Preserve the design for automatic reload of external file changes, with the implementation arriving in a later milestone.
 - Recover cleanly from partial writes or sync conflicts when possible.
 
 ## 4. Architecture
-- `core`: shared domain logic, YAML persistence, history, file watching, config, i18n loading.
-- `desktop`: egui desktop app with custom window chrome and tray support.
+- `core`: shared domain logic, YAML persistence, history, config, message loading, bootstrap logic.
+- `desktop`: egui desktop app with a management window, multiple note windows, autosave, and single-instance behavior.
 - `tui`: terminal UI app using the same `core`.
 
 The `core` crate should not depend on GUI frameworks.
@@ -50,15 +47,16 @@ Format:
 ```yaml
 sample_key:
   ja: サンプルメッセージ
-  en: sample messages
+  en: sample message
 ```
 
 ### Rules
-- Each message key maps to both `ja` and `en`.
-- v1 requires Japanese and English only.
+- Each message key must provide `en`.
+- v1 supports Japanese and English.
 - Missing translations fall back to English.
 - The selected UI language comes from local config, with optional system-locale fallback.
 - `messages.yml` should be validated by the published schema.
+- The first implementation uses the bundled `messages.yml`.
 
 ## 6. Storage Model
 ### Local config
@@ -69,12 +67,32 @@ Examples:
 - macOS: `~/Library/Application Support/LeanSticky/config.yml`
 - Linux: `${XDG_CONFIG_HOME:-~/.config}/leansticky/config.yml`
 
-Suggested fields:
+Fields:
 - `schema_version`
 - `locale`
-- `note_roots`: list of folder paths to load
+- `note_roots`
 - `autosave_delay_ms`
-- `history`
+- `history.max_snapshots_per_note`
+
+### Local session
+Management-window placement, open note windows, and restore state live in `session.yml`.
+
+Examples:
+- Windows: `%AppData%/LeanSticky/session.yml`
+- macOS: `~/Library/Application Support/LeanSticky/session.yml`
+- Linux: `${XDG_CONFIG_HOME:-~/.config}/leansticky/session.yml`
+
+Fields:
+- `schema_version`
+- `management_window`
+- `open_windows[]`
+
+Each `open_windows` entry stores:
+- `root`
+- `note_id`
+- `position`
+- `size`
+- `maximized`
 
 ### Note roots
 The config can contain any number of note root folders.
@@ -92,109 +110,99 @@ Each note root uses YAML files:
 ### Note file
 Each note is stored as a single UTF-8 YAML file.
 
-Suggested fields:
+Fields:
 - `schema_version`
 - `id`
 - `title`
 - `content`
 - `created_at`
 - `updated_at`
-- `always_on_top`
-- `window`: position, size, maximized state
+
+Machine-local window placement and restore state are intentionally excluded from note files.
 
 ### Rationale
-- Local-only config keeps machine-specific settings separate from shared note data.
+- Config and session state remain machine-local.
+- Note content stays easy to sync safely across machines.
 - Multiple note roots allow flexible folder-based organization.
 - YAML is easy to inspect and edit manually.
-- History snapshots are append-only and can be trimmed by policy.
+- History snapshots stay append-only and easy to prune.
 
 ## 7. Save and History Rules
-- Start a 1.5 second idle timer after each edit.
+- Start an idle timer for `autosave_delay_ms` after each edit.
 - Reset the timer on further input.
 - When the timer expires:
   - write the current note atomically as YAML
   - append one YAML history snapshot
   - update in-memory dirty state
+- The first implementation applies only `max_snapshots_per_note` pruning.
 - Use atomic write via temporary file + rename where supported.
-- Keep a bounded history policy, for example:
-  - dense recent history for the last hour
-  - reduced history for older snapshots
-  - max snapshot count per note
 
-## 8. Sync and Reload Behavior
-- Watch every configured note root for external changes.
-- On external modification:
-  - reload the changed note if the editor is clean
-  - if the note is dirty locally, keep local text in memory and surface a conflict state
-- On deleted files:
-  - remove the note from the list after confirmation rules defined in config
-- On newly added files:
-  - load them into the note list automatically
-- Config file changes should also be reloaded locally without restarting when practical.
-
-Conflict handling should stay simple in v1:
-- prefer non-destructive behavior
-- keep local unsaved text
-- expose "Reload from disk" and "Save as new version" actions
+## 8. Startup and Restore
+- On first launch, create a default note root under the platform data directory.
+- Generate `config.yml` and `session.yml` automatically when missing.
+- If there are no notes yet, create one empty note.
+- On startup, restore note windows from `session.yml`.
+- Missing restored notes are skipped.
+- If no restorable windows remain, open the first existing note, or create a new one if needed.
+- The `open_windows` array order is the restore order.
 
 ## 9. Desktop UI
 ### Main principles
-- Minimal visual weight.
-- Notes should feel like floating tools, not full document windows.
-- Custom chrome must remain keyboard accessible.
+- Keep the interface visually light.
+- Notes should feel like floating tools, not heavy document windows.
+- Separate management and note windows to support multi-note workflows.
 
-### Window controls
-- Pin icon for always-on-top toggle.
-- Minimize button.
-- Maximize/restore button.
-- Close button.
-- Buttons are hidden at rest and appear on hover with a subtle rise/fade animation.
+### First implementation
+- The management window provides note listing, create, and open actions.
+- Each note opens in a separate window inside the same process.
+- A second launch sends an activate request to the existing process and exits.
+- The existing process brings the management window to the front.
+- Note windows allow editing title and content.
+- Save state is shown with subtle status text.
 
-### Note view
-- Main area is a text editor with low-latency typing.
-- Optional compact title field.
-- Visual dirty state should be subtle because saving is automatic.
-- Labels, menus, and status text come from `messages.yml`.
+### Later milestones
+- Frameless custom chrome
+- Always-on-top toggle
+- Tray integration
+- External file watching
 
-## 10. Tray Behavior
-- Left click: open list of notes and quick actions.
-- Right click: show menu with localized Settings and Quit entries.
-- Tray should remain available even when all note windows are closed.
-
-## 11. TUI Design
+## 10. TUI Design
 - Reuse the same note roots and local config.
-- Support note list, open/edit, search, create, delete, and history browse.
+- Eventually support note list, open/edit, search, create, delete, and history browse.
 - Avoid mouse-only assumptions.
 - Use the same message keys and language selection as the GUI app.
 - Work well inside tmux and other multiplexers.
 
-## 12. Published Schema
+## 11. Published Schema
 Docs are intended for GitHub Pages publishing.
 
 Publish versioned schemas under `docs/schema/` so they are accessible as:
 - `/schema/v001/schema.json`
 - `/schema/v001/config.schema.json`
+- `/schema/v001/session.schema.json`
 - `/schema/v001/note.schema.json`
 - `/schema/v001/messages.schema.json`
 
 Recommended usage:
 - `schema.json`: version entry point and shared definitions
 - `config.schema.json`: local config YAML schema
+- `session.schema.json`: local restore-state YAML schema
 - `note.schema.json`: note and history YAML schema
 - `messages.schema.json`: localized message catalog schema
 
-## 13. Suggested Dependencies
+## 12. Suggested Dependencies
 - `eframe` / `egui` for GUI
 - `serde` + `serde_yaml` for persistence
-- `notify` for filesystem watching
-- `tray-icon` for system tray integration
-- `directories` for platform-local config paths
-- `tokio` only if async needs are proven necessary; avoid by default
+- `directories` for platform-local paths
+- `single-instance` for single-process startup
+- `ulid` for note IDs
+- Avoid `tokio` until async needs are clearly justified
 
-## 14. Milestones
-1. Shared `core` crate with YAML note model, YAML config, history, i18n loading, and atomic save.
-2. Basic desktop note window with autosave.
-3. Custom window chrome and always-on-top toggle.
-4. Tray integration and localized note list.
-5. External file reload, multi-root watching, and conflict handling.
-6. TUI implementation on top of `core`.
+## 13. Milestones
+1. Shared `core` crate with YAML note model, config, session, history, i18n loading, and atomic save.
+2. Basic desktop note windows with autosave and a management window.
+3. Single-instance startup and session restore.
+4. Custom window chrome and always-on-top toggle.
+5. Tray integration and localized note list.
+6. External file reload, multi-root watching, and conflict handling.
+7. TUI implementation on top of `core`.
